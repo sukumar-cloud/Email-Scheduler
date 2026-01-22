@@ -1,17 +1,16 @@
 import pkg from '@prisma/client';
-const { PrismaClient } = pkg;
 
 declare global {
-    var __prisma: InstanceType<typeof PrismaClient> | undefined;
+    var __prisma: InstanceType<typeof pkg.PrismaClient> | undefined;
 }
 
-let prisma: InstanceType<typeof PrismaClient>;
+let prisma: InstanceType<typeof pkg.PrismaClient>;
 
 if (process.env.NODE_ENV === 'production') {
-    prisma = new PrismaClient();
+    prisma = new pkg.PrismaClient();
 } else {
     if (!global.__prisma) {
-        global.__prisma = new PrismaClient({
+        global.__prisma = new pkg.PrismaClient({
             log: ['error', 'warn'],
         });
     }
