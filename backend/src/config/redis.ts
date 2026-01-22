@@ -4,6 +4,21 @@ const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = parseInt(process.env.REDIS_PORT || '6379');
 const redisPassword = process.env.REDIS_PASSWORD;
 
+ export const bullmqConnection = redisPassword && redisHost.includes('upstash.io')
+     ? {
+         host: redisHost,
+         port: 6379,
+         password: redisPassword,
+         tls: {
+             rejectUnauthorized: false,
+         },
+     }
+     : {
+         host: redisHost,
+         port: redisPort,
+         password: redisPassword,
+     };
+
 // Use connection URL for Upstash, or standard config for local Redis
 let redisClient: Redis;
 

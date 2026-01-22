@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import type { Request, Response } from 'express';
 import { prisma } from '../src/config/database';
 import redisClient from '../src/config/redis';
 import { EmailWorker } from '../src/infra/queue/EmailWorker';
@@ -41,7 +42,8 @@ const initialize = async () => {
   }
 };
 
-// Standard Express server start (uncomment if running standalone)
-// app.listen(process.env.PORT || 3000, () => {
-//   console.log(`Server running on port ${process.env.PORT || 3000}`);
-// });
+// Vercel-style serverless handler (works with Vercel Node runtime)
+export default async function handler(req: Request, res: Response) {
+  await initialize();
+  return app(req, res);
+}

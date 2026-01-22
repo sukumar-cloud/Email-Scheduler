@@ -1,6 +1,6 @@
 import { Queue } from 'bullmq';
 import { Email } from '../../domain/entities/Email';
-import redisClient from '../../config/redis';
+import { bullmqConnection } from '../../config/redis';
 
 const MIN_DELAY_MS = parseInt(process.env.MIN_DELAY_BETWEEN_EMAILS_MS || '2000');
 
@@ -9,7 +9,7 @@ export class EmailQueue {
 
   constructor() {
     this.queue = new Queue('email-queue', {
-      connection: redisClient,
+      connection: bullmqConnection,
       defaultJobOptions: {
         attempts: 3,
         backoff: {

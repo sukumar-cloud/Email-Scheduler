@@ -30,7 +30,7 @@ export class EmailRepositoryImpl implements EmailRepository {
     await prisma.email.update({
       where: { id },
       data: {
-        status: { equals: 'SENT' },
+        status: 'SENT',
         sentAt,
       },
     });
@@ -39,14 +39,14 @@ export class EmailRepositoryImpl implements EmailRepository {
   async markFailed(id: string): Promise<void> {
     await prisma.email.update({
       where: { id },
-      data: { status: { equals: 'FAILED' } },
+      data: { status: 'FAILED' },
     });
   }
 
   async findScheduled(userId?: string): Promise<Email[]> {
     const emails = await prisma.email.findMany({
       where: {
-        status: { equals: 'SCHEDULED' },
+        status: 'SCHEDULED',
         ...(userId && { userId }),
       },
       orderBy: { scheduledAt: 'asc' },
@@ -58,7 +58,7 @@ export class EmailRepositoryImpl implements EmailRepository {
   async findSent(userId?: string): Promise<Email[]> {
     const emails = await prisma.email.findMany({
       where: {
-        status: { equals: 'SENT' },
+        status: 'SENT',
         ...(userId && { userId }),
       },
       orderBy: { sentAt: 'desc' },
@@ -71,7 +71,7 @@ export class EmailRepositoryImpl implements EmailRepository {
     const emails = await prisma.email.findMany({
       where: {
         userId,
-        ...(status && { status: { equals: status?.toUpperCase() } }),
+        ...(status && { status }),
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -82,7 +82,7 @@ export class EmailRepositoryImpl implements EmailRepository {
   async findByStatus(status: 'SCHEDULED' | 'SENT' | 'FAILED'): Promise<Email[]> {
     const emails = await prisma.email.findMany({
       where: {
-        status: { equals: status?.toUpperCase() },
+        status,
       },
       orderBy: { createdAt: 'desc' },
     });

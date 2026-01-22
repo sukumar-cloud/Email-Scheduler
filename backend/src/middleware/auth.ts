@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 
 export interface AuthenticatedRequest extends Request {
     user?: {
@@ -9,14 +9,18 @@ export interface AuthenticatedRequest extends Request {
     };
 }
 
-export function requireAuth(
-    req: AuthenticatedRequest,
+export const requireAuth: RequestHandler = (
+    req: Request,
     res: Response,
     next: NextFunction
-): void {
-    if (!req.isAuthenticated() || !req.user) {
+): void => {
+    const authReq = req as AuthenticatedRequest;
+    const isAuthenticated = (req as any).isAuthenticated?.bind(req);
+
+    if (!isAuthenticated?.() || !authReq.user) {
         res.status(401).json({ error: 'Unauthorized' });
         return;
     }
+
     next();
-}
+};

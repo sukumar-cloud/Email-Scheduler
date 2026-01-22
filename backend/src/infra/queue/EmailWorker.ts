@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import redisClient from '../../config/redis';
+import { bullmqConnection } from '../../config/redis';
 import { EmailRepositoryImpl } from '../repositories/EmailRepositoryImpl';
 import { MailService } from '../mailer/MailService';
 import { RateLimiter, RateLimitExceededError } from '../../domain/services/RateLimiter';
@@ -19,7 +19,7 @@ export class EmailWorker {
         this.rateLimiter = new RateLimiter();
 
         this.worker = new Worker('email-queue', this.processJob.bind(this), {
-            connection: redisClient,
+            connection: bullmqConnection,
             concurrency: WORKER_CONCURRENCY,
             limiter: {
                 max: 1,
