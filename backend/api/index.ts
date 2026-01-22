@@ -5,6 +5,7 @@ import { prisma } from '../src/config/database';
 import redisClient from '../src/config/redis';
 import { EmailWorker } from '../src/infra/queue/EmailWorker';
 import emailRoutes from '../src/routes/emails';
+import authRoutes from '../src/routes/auth';
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/emails', emailRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
