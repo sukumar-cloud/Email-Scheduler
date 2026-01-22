@@ -1,9 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-let prisma: PrismaClient;
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
 
 declare global {
-    var __prisma: PrismaClient | undefined;
+    var __prisma: InstanceType<typeof PrismaClient> | undefined;
 }
+
+let prisma: InstanceType<typeof PrismaClient>;
 
 if (process.env.NODE_ENV === 'production') {
     prisma = new PrismaClient();
