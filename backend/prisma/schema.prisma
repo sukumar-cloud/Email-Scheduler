@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  googleId  String   @unique
+  createdAt DateTime @default(now())
+  emails    Email[]
+}
+
+model Email {
+  id          String      @id @default(uuid())
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender      String
+  recipient   String
+  subject     String
+  body        String      @db.Text
+  scheduledAt DateTime
+  sentAt      DateTime?
+  status      EmailStatus @default(SCHEDULED)
+  jobId       String?     @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId, status])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+enum EmailStatus {
+  SCHEDULED
+  SENT
+  FAILED
+}
+
+model RateLimitCounter {
+  id        String   @id @default(uuid())
+  sender    String
+  hourKey   String
+  count     Int      @default(0)
+  expiresAt DateTime
+
+  @@unique([sender, hourKey])
+  @@index([expiresAt])
+}
