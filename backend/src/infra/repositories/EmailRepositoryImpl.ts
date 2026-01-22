@@ -1,7 +1,6 @@
 import { Email } from '../../domain/entities/Email';
 import { EmailRepository } from '../../domain/repositories/EmailRepository';
 import { prisma } from '../../config/database';
-import { EmailStatus } from '@prisma/client';
 
 export class EmailRepositoryImpl implements EmailRepository {
   async create(email: Email): Promise<Email> {
@@ -14,7 +13,7 @@ export class EmailRepositoryImpl implements EmailRepository {
         subject: email.subject,
         body: email.body,
         scheduledAt: email.scheduledAt,
-        status: email.status as EmailStatus,
+        status: email.status,
         jobId: email.jobId,
       },
     });
@@ -31,7 +30,7 @@ export class EmailRepositoryImpl implements EmailRepository {
     await prisma.email.update({
       where: { id },
       data: {
-        status: EmailStatus.SENT,
+        status: 'SENT',
         sentAt,
       },
     });
@@ -40,14 +39,14 @@ export class EmailRepositoryImpl implements EmailRepository {
   async markFailed(id: string): Promise<void> {
     await prisma.email.update({
       where: { id },
-      data: { status: EmailStatus.FAILED },
+      data: { status: 'FAILED' },
     });
   }
 
   async findScheduled(userId?: string): Promise<Email[]> {
     const emails = await prisma.email.findMany({
       where: {
-        status: EmailStatus.SCHEDULED,
+        status: 'SCHEDULED',
         ...(userId && { userId }),
       },
       orderBy: { scheduledAt: 'asc' },
@@ -59,7 +58,7 @@ export class EmailRepositoryImpl implements EmailRepository {
   async findSent(userId?: string): Promise<Email[]> {
     const emails = await prisma.email.findMany({
       where: {
-        status: EmailStatus.SENT,
+        status: 'SENT',
         ...(userId && { userId }),
       },
       orderBy: { sentAt: 'desc' },
@@ -72,7 +71,7 @@ export class EmailRepositoryImpl implements EmailRepository {
     const emails = await prisma.email.findMany({
       where: {
         userId,
-        ...(status && { status: status.toUpperCase() as EmailStatus }),
+        ...(status && { status: status?.toUpperCase() }),
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -83,7 +82,7 @@ export class EmailRepositoryImpl implements EmailRepository {
   async findByStatus(status: 'SCHEDULED' | 'SENT' | 'FAILED'): Promise<Email[]> {
     const emails = await prisma.email.findMany({
       where: {
-        status: status.toUpperCase() as EmailStatus,
+        status: status?.toUpperCase(),
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -101,7 +100,7 @@ export class EmailRepositoryImpl implements EmailRepository {
       body: data.body,
       scheduledAt: data.scheduledAt,
       sentAt: data.sentAt,
-      status: data.status as 'SCHEDULED' | 'SENT' | 'FAILED',
+      status: data.status,
       jobId: data.jobId,
     });
   }
