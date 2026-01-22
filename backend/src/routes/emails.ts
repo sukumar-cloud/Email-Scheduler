@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
+import { requireAuth } from '../middleware/auth';
 import { EmailRepositoryImpl } from '../infra/repositories/EmailRepositoryImpl';
 import { EmailQueue } from '../infra/queue/EmailQueue';
 import { EmailSchedulerService } from '../domain/services/EmailSchedulerService';
@@ -14,7 +14,7 @@ const emailQueue = new EmailQueue();
 const schedulerService = new EmailSchedulerService(emailRepo, emailQueue);
 
 // Schedule emails
-router.post('/schedule', requireAuth, async (req: AuthenticatedRequest, res) => {
+router.post('/schedule', requireAuth, async (req, res) => {
     try {
         const {
             subject,
@@ -50,7 +50,7 @@ router.post('/schedule', requireAuth, async (req: AuthenticatedRequest, res) => 
 
             const email = new Email({
                 id: uuidv4(),
-                userId: req.user!.id,
+                userId: (req as any).user!.id,
                 sender,
                 recipient: recipients[i],
                 subject,
@@ -83,9 +83,9 @@ router.post('/schedule', requireAuth, async (req: AuthenticatedRequest, res) => 
 });
 
 // Get scheduled emails
-router.get('/scheduled', requireAuth, async (req: AuthenticatedRequest, res) => {
+router.get('/scheduled', requireAuth, async (req, res) => {
     try {
-        const emails = await emailRepo.findByUserId(req.user!.id, 'SCHEDULED');
+        const emails = await emailRepo.findByUserId((req as any).user!.id, 'SCHEDULED');
         res.json({ emails });
     } catch (error) {
         console.error('Error fetching scheduled emails:', error);
@@ -94,9 +94,9 @@ router.get('/scheduled', requireAuth, async (req: AuthenticatedRequest, res) => 
 });
 
 // Get sent emails
-router.get('/sent', requireAuth, async (req: AuthenticatedRequest, res) => {
+router.get('/sent', requireAuth, async (req, res) => {
     try {
-        const emails = await emailRepo.findByUserId(req.user!.id, 'SENT');
+        const emails = await emailRepo.findByUserId((req as any).user!.id, 'SENT');
         res.json({ emails });
     } catch (error) {
         console.error('Error fetching sent emails:', error);
