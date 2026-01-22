@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "npm install --no-save @types/node && tsc",
+    "build": "tsc",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -16,6 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "6.19.2",
+    "@types/node": "25.0.10",
     "bcrypt": "6.0.0",
     "bullmq": "5.66.6",
     "cors": "^2.8.5",
@@ -33,7 +34,6 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.1",
-    "@types/node": "25.0.10",
     "@types/nodemailer": "7.0.5",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.17",
