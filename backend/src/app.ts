@@ -1,6 +1,6 @@
 import express from 'express';
 import session from 'express-session';
-import RedisStore from 'connect-redis';
+import { RedisStore } from 'connect-redis';
 import cors from 'cors';
 import passport from './config/auth';
 import authRoutes from './routes/auth';
@@ -15,7 +15,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'your-secret-key-change-thi
 // Initialize store.
 const redisStore = new RedisStore({
     client: redisClient,
-    prefix: "sess:",
+    prefix: 'sess:',
 });
 
 // Middleware
