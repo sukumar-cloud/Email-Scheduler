@@ -12,6 +12,24 @@ const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 const SESSION_SECRET = process.env.SESSION_SECRET || 'your-secret-key-change-this';
 
+const normalizeOrigin = (origin: string) => origin.replace(/\/$/, '');
+
+const isAllowedOrigin = (origin: string) => {
+    const normalized = normalizeOrigin(origin);
+    const allowedFrontend = normalizeOrigin(FRONTEND_URL);
+
+    if (normalized === allowedFrontend) return true;
+    if (normalized === 'http://localhost:3000') return true;
+    if (normalized === 'http://localhost:3001') return true;
+
+    try {
+        const url = new URL(normalized);
+        return url.protocol === 'https:' && url.hostname.endsWith('.vercel.app');
+    } catch {
+        return false;
+    }
+};
+
 // Initialize store.
 const redisStore = new RedisStore({
     client: redisClient,
@@ -20,7 +38,12 @@ const redisStore = new RedisStore({
 
 // Middleware
 app.use(cors({
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        return isAllowedOrigin(origin)
+            ? callback(null, true)
+            : callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
 }));
 
