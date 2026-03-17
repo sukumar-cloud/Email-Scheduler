@@ -1,20 +1,119 @@
-# Outbox: Production-Grade Email Scheduler
+# Distributed Email Scheduling Platform
 
-A robust platform for scheduling and sending emails at precise times, with full persistence, rate limiting, and a modern dashboard.
+A production-grade platform for scheduling and sending emails at precise times, featuring persistent job queues, rate limiting, and a modern dashboard interface.
 
 ---
 
-## How to Run the Project
+## 🚀 Overview
 
-### 1. Prerequisites
-- Node.js 18+
-- Docker & Docker Compose
-- Google Cloud account (for OAuth credentials)
+This system allows users to schedule emails with high reliability using a distributed queue-based architecture.
 
-### 2. Backend (Express, Redis, PostgreSQL, BullMQ Worker)
+### Key Capabilities
+
+* Delayed job scheduling using queues
+* Rate limiting per sender
+* Fault-tolerant processing
+* Persistent job storage across restarts
+* Scalable worker-based execution
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
+
+* Node.js
+* Express.js
+* PostgreSQL (Prisma ORM)
+* Redis (BullMQ)
+
+### Frontend
+
+* React (Vite)
+
+### Infrastructure
+
+* Docker & Docker Compose
+
+---
+
+## ⚙️ How It Works
+
+1. Users schedule emails via the frontend (CSV upload supported)
+2. Backend stores email metadata in PostgreSQL
+3. BullMQ queues delayed jobs in Redis
+4. Worker processes jobs at scheduled time:
+
+   * Applies rate limiting
+   * Sends emails via SMTP
+   * Updates delivery status in database
+
+---
+
+## 🔄 Core Features
+
+### ⏱ Scheduling & Queue System
+
+* Uses BullMQ for reliable delayed job execution
+* Jobs persist across restarts via Redis
+
+### 🚦 Rate Limiting
+
+* Redis-based counters using atomic operations (`INCR`)
+* Per-sender hourly limits enforced
+* Automatic rescheduling when limits are exceeded
+
+### ⚡ Concurrency & Workers
+
+* Configurable worker concurrency
+* Distributed processing support
+* Fault-tolerant retry mechanisms
+
+### 🔁 Idempotency & Persistence
+
+* Prevents duplicate email sends
+* Job states persist across system restarts
+
+---
+
+## 🔐 Authentication
+
+* Google OAuth 2.0 integration
+* Session-based authentication
+* Secure credential handling via environment variables
+
+---
+
+## 📡 API Endpoints
+
+### Authentication
+
+* `GET /api/auth/google`
+* `GET /api/auth/google/callback`
+* `GET /api/auth/me`
+* `POST /api/auth/logout`
+
+### Emails
+
+* `POST /api/emails/schedule`
+* `GET /api/emails/scheduled`
+* `GET /api/emails/sent`
+
+---
+
+## ⚙️ Setup Instructions
+
+### Prerequisites
+
+* Node.js 18+
+* Docker & Docker Compose
+
+### Installation
+
 ```bash
-# Clone the repository
-cd outbox
+# Clone repository
+git clone <your-repo-url>
+cd project-folder
 
 # Install backend dependencies
 cd backend
@@ -25,182 +124,78 @@ cd ../frontend
 npm install
 ```
 
-### 2. Start Infrastructure (Docker)
+### Start Infrastructure
 
 ```bash
-# From project root
 docker-compose up -d
-
-# Verify services are running
-docker ps
 ```
 
-This starts:
-- PostgreSQL on `localhost:5432`
-- Redis on `localhost:6379`
-
-### 3. Configure Google OAuth
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing
-3. Enable **Google+ API**
-4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
-5. Application type: **Web application**
-6. Authorized redirect URIs:
-   - `http://localhost:3001/api/auth/google/callback`
-7. Copy **Client ID** and **Client Secret**
-
-### 4. Backend Environment Setup
+### Run Application
 
 ```bash
+# Backend
 cd backend
-cp .env.example .env
+npm start
+
+# Frontend
+cd frontend
+npm start
 ```
 
-Edit `.env` and add your Google OAuth credentials:
+---
+
+## 🔧 Environment Variables
+
+Create a `.env` file inside the backend directory:
 
 ```env
-# Database
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/reachinbox?schema=public"
+DATABASE_URL=your_postgresql_connection
 
-# Redis
-REDIS_HOST="localhost"
+REDIS_HOST=localhost
 REDIS_PORT=6379
 
-# Server
 PORT=3001
-NODE_ENV="production"
+NODE_ENV=production
 
-# Session
-SESSION_SECRET="your-super-secret-session-key-change-this"
+SESSION_SECRET=your_secret_key
 
-# Google OAuth (REQUIRED - Add your credentials here)
-GOOGLE_CLIENT_ID="your-google-client-id.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-GOOGLE_CALLBACK_URL="http://localhost:3001/api/auth/google/callback"
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:3001/api/auth/google/callback
 
-# Frontend URL
-FRONTEND_URL="http://localhost:3000"
+FRONTEND_URL=http://localhost:3000
 
-# Email (Production SMTP)
-SMTP_HOST="your-smtp-host"
+SMTP_HOST=your_smtp_host
 SMTP_PORT=587
-SMTP_USER="your-smtp-username"
-SMTP_PASS="your-smtp-password"
+SMTP_USER=your_email
+SMTP_PASS=your_password
 
-# Rate Limiting & Concurrency
 MAX_EMAILS_PER_HOUR_PER_SENDER=100
 WORKER_CONCURRENCY=5
 MIN_DELAY_BETWEEN_EMAILS_MS=2000
 ```
 
-### 5. Database Setup
+---
 
-```bash
-cd backend
+## 🚀 Deployment Notes
 
-# Generate Prisma client
-npx prisma generate
+* Use managed PostgreSQL and Redis services
+* Run multiple worker instances for scalability
+* Configure secure environment variables
+* Use HTTPS and correct OAuth redirect URLs
 
-# Run migrations
-npx prisma migrate deploy
-```
+---
 
-### 6. Frontend Environment Setup
+## 🎯 Key Highlights
 
-```bash
-cd frontend
-cp .env.local.example .env.local
-```
+* Distributed queue-based architecture
+* Scalable worker system with concurrency control
+* Reliable rate limiting using Redis
+* Persistent and fault-tolerant job execution
+* Production-ready backend design
 
-Edit `.env.local`:
+---
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-```
+## 👨‍💻 Author
 
-### 7. Run the Application
-
-**Terminal 1 - Backend:**
-```bash
-cd backend
-npm start
-```
-
-Backend will start on `http://localhost:3001`
-
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
-npm start
-```
-
-Frontend will start on `http://localhost:3000`
-
-## Architecture
-
-### How Scheduling Works
-
-1. **User schedules emails** via frontend (CSV upload)
-2. **API creates Email records** in PostgreSQL
-3. **BullMQ adds delayed jobs** to Redis queue
-4. **Worker processes jobs** at scheduled time:
-   - Checks rate limit (Redis counter)
-   - If limit exceeded → reschedules to next hour
-   - Sends email via SMTP
-   - Updates database status
-
-### Persistence on Restart
-
-- **Jobs stored in Redis** - BullMQ persists jobs to Redis
-- **Email records in PostgreSQL** - Database tracks all emails
-- **On restart** - Worker reconnects to Redis and continues processing pending jobs
-- **Idempotency** - Job IDs prevent duplicate sends
-
-### Rate Limiting Implementation
-
-- **Redis-based counters** - Key: `rate_limit:{sender}:{YYYY-MM-DD-HH}`
-- **Atomic operations** - INCR command ensures thread-safety
-- **Auto-expiry** - Keys expire after 1 hour
-- **Rescheduling** - When limit hit, job delayed to next hour window
-
-### Concurrency
-
-- **Worker concurrency**: 5 (configurable via `WORKER_CONCURRENCY`)
-- **Min delay between emails**: 2000ms (configurable via `MIN_DELAY_BETWEEN_EMAILS_MS`)
-- **BullMQ limiter** - Ensures delays are respected across workers
-
-## API Endpoints
-
-### Authentication
-- `GET /api/auth/google` - Initiate Google OAuth
-- `GET /api/auth/google/callback` - OAuth callback
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/logout` - Logout
-
-### Emails
-- `POST /api/emails/schedule` - Schedule emails
-- `GET /api/emails/scheduled` - Get scheduled emails
-- `GET /api/emails/sent` - Get sent emails
-
-## 🚀 Production Deployment
-
-1. **Environment Variables**
-   - Set `NODE_ENV=production`
-   - Use strong `SESSION_SECRET`
-   - Configure real SMTP provider
-   - Update `FRONTEND_URL` and callback URLs
-
-2. **Database**
-   - Use managed PostgreSQL (AWS RDS, DigitalOcean, etc.)
-   - Run migrations: `npx prisma migrate deploy`
-
-3. **Redis**
-   - Use managed Redis (AWS ElastiCache, Redis Cloud, etc.)
-   - Enable persistence (AOF/RDB)
-
-4. **Scaling**
-   - Run multiple worker instances
-   - Rate limiting is safe across instances (Redis-based)
-   - Use load balancer for API
+Built as a backend-focused project demonstrating distributed systems, queue processing, and scalable architecture.
